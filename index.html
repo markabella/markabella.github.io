@@ -2,16 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Responsive viewport meta tag -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ask Saint John Climacus</title>
+    <!-- Include Bootstrap CSS for styling and responsiveness -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Ask Saint John Climacus</h1>
-    <p>Replies may take a momment.</p>
-    <input type="text" id="userQuestion" placeholder="Your question...">
-    <button onclick="submitQuestion()">Submit</button>
-    <p id="response"></p>
+    <div class="container">
+        <h1 class="mt-5">Ask Saint John Climacus</h1>
+        <p class="lead">Replies may take a moment.</p>
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <!-- Use Bootstrap form classes for styling -->
+                <div class="form-group">
+                    <input type="text" id="userQuestion" class="form-control" placeholder="Your question...">
+                </div>
+                <button onclick="submitQuestion()" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+        <!-- Responsive text display area -->
+        <p id="response" class="mt-3"></p>
+    </div>
 
     <script src="script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
