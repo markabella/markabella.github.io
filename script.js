@@ -1,12 +1,9 @@
 function submitQuestion() {
-    //const replyNotice = document.getElementById('replyNotice');
+
     const ladderLoader = document.getElementById('ladderLoader');
     const questionBox = document.getElementById('userQuestion');
     const responseElement = document.getElementById('response');
     const userQuestion = questionBox.value.trim();
-
-    // Show the 'Replies may take a moment' message
-    // replyNotice.style.display = 'block';
     
     // Show the ladder loader
     ladderLoader.classList.remove('hidden');
