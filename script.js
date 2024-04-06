@@ -8,7 +8,7 @@ function submitQuestion() {
     // Show the ladder loader
     ladderLoader.classList.remove('hidden');
 
-    fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/yourFunction?q=${encodeURIComponent(userQuestion)}`)
+    fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/answerQuestion?q=${encodeURIComponent(userQuestion)}`)
         .then(response => {
             if (!response.ok) {
                 // If response from server is not OK, throw an error with status text
