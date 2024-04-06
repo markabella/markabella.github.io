@@ -1,13 +1,17 @@
-// Example: netlify/functions/yourFunction.js
-exports.handler = async function(event) {
-  const question = event.queryStringParameters.q || 'Welcome';
+exports.handler = async (event) => {
+  const question = event.queryStringParameters.q || "Ask me a question.";
 
-  // Process the question to find relevant responses
-  // This example simply echoes the question; replace this logic with your own
-  const responseText = `You asked: ${question}`;
+  // Your response processing logic here
+  const answer = `You asked: ${question}. Here's a placeholder response.`;
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ answer: responseText })
+    headers: {
+      "Access-Control-Allow-Origin": "https://markabella.github.io", // Allows requests from any domain
+      // For better security, replace * with your GitHub Pages URL like "https://yourusername.github.io"
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    },
+    body: JSON.stringify({ answer }),
   };
 };
