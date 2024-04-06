@@ -7,7 +7,9 @@ function submitQuestion() {
 
     // Show the 'Replies may take a moment' message
     // replyNotice.style.display = 'block';
-    const ladderLoader = document.getElementById('ladderLoader');
+    
+    // Show the ladder loader
+    ladderLoader.classList.remove('hidden');
 
     fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/yourFunction?q=${encodeURIComponent(userQuestion)}`)
         .then(response => {
