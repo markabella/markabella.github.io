@@ -19,13 +19,25 @@ exports.handler = async (event) => {
     })
   });
 
-  const data = await response.json();
+const data = await response.json();
+
+  // Check if 'choices' is defined and has at least one item
+  if (!data.choices || data.choices.length === 0) {
+    console.error('No choices available in the API response', data);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "The API response did not contain choices." }),
+    };
+  }
+
+  // Use the previously declared answerText variable for cleaner code
+  const answerText = data.choices[0].text.trim();
 
   return {
     statusCode: 200,
     headers: {
       "Access-Control-Allow-Origin": "https://markabella.github.io", // Make sure CORS policy allows your GitHub Pages domain
     },
-    body: JSON.stringify({ answer: data.choices[0].text.trim() }),
+    body: JSON.stringify({ answer: answerText }), // Utilize the answerText variable
   };
 };
