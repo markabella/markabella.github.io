@@ -1,4 +1,7 @@
 function submitQuestion() {
+    // Show the 'Replies may take a moment' message
+    document.getElementById('replyNotice').style.display = 'block';
+    
     const questionBox = document.getElementById('userQuestion');
     const responseElement = document.getElementById('response');
     const userQuestion = questionBox.value.trim();
