@@ -1,11 +1,13 @@
 function submitQuestion() {
-    const replyNotice = document.getElementById('replyNotice');
+    //const replyNotice = document.getElementById('replyNotice');
+    const ladderLoader = document.getElementById('ladderLoader');
     const questionBox = document.getElementById('userQuestion');
     const responseElement = document.getElementById('response');
     const userQuestion = questionBox.value.trim();
 
     // Show the 'Replies may take a moment' message
-    replyNotice.style.display = 'block';
+    // replyNotice.style.display = 'block';
+    const ladderLoader = document.getElementById('ladderLoader');
 
     fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/yourFunction?q=${encodeURIComponent(userQuestion)}`)
         .then(response => {
@@ -19,13 +21,17 @@ function submitQuestion() {
             console.log('API Response:', data); // Log the entire response for debugging
             // Use optional chaining and nullish coalescing to handle cases where data or data.answer might be undefined
             const answer = data?.answer ?? "No answer provided."; // Provide a default message if `data.answer` is undefined
-            replyNotice.style.display = 'none';
+            // replyNotice.style.display = 'none';
+            // Hide the ladder loader
+            ladderLoader.classList.add('hidden');
             responseElement.innerText = `Answer: ${answer}`;
         })
         .catch(error => {
             console.error('Error:', error);
             // Display a more informative error message, including the error caught
-            replyNotice.style.display = 'none';
+            // replyNotice.style.display = 'none';
+            // Hide the ladder loader
+            ladderLoader.classList.add('hidden');
             responseElement.innerText = `Error fetching response: ${error.message}`;
         });
 }
