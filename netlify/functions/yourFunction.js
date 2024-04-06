@@ -36,7 +36,7 @@ const data = await response.json();
   return {
     statusCode: 200,
     headers: {
-      "Access-Control-Allow-Origin": "https://markabella.github.io", // Make sure CORS policy allows your GitHub Pages domain
+      "Access-Control-Allow-Origin": "*", // Make sure CORS policy allows your GitHub Pages domain
     },
     body: JSON.stringify({ answer: answerText }), // Utilize the answerText variable
   };
