@@ -26,7 +26,7 @@ exports.handler = async (event) => {
     statusCode: 200,
     headers: {
       // Replace "*" with your specific domain to tighten security, e.g., "https://yourdomain.com"
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://main--scintillating-pika-68754f.netlify.app",
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Allow-Methods": "GET, OPTIONS",
       // Add any other headers as needed
