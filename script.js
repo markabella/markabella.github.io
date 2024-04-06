@@ -1,10 +1,11 @@
 function submitQuestion() {
-    // Show the 'Replies may take a moment' message
-    document.getElementById('replyNotice').style.display = 'block';
-    
+    const replyNotice = document.getElementById('replyNotice');
     const questionBox = document.getElementById('userQuestion');
     const responseElement = document.getElementById('response');
     const userQuestion = questionBox.value.trim();
+
+    // Show the 'Replies may take a moment' message
+    replyNotice.style.display = 'block';
 
     fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/yourFunction?q=${encodeURIComponent(userQuestion)}`)
         .then(response => {
@@ -18,11 +19,13 @@ function submitQuestion() {
             console.log('API Response:', data); // Log the entire response for debugging
             // Use optional chaining and nullish coalescing to handle cases where data or data.answer might be undefined
             const answer = data?.answer ?? "No answer provided."; // Provide a default message if `data.answer` is undefined
+            replyNotice.style.display = 'none';
             responseElement.innerText = `Answer: ${answer}`;
         })
         .catch(error => {
             console.error('Error:', error);
             // Display a more informative error message, including the error caught
+            replyNotice.style.display = 'none';
             responseElement.innerText = `Error fetching response: ${error.message}`;
         });
 }
