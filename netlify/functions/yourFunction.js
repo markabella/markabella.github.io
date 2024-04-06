@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   const question = event.queryStringParameters.q || "Ask me a question.";
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Use your OpenAI API key
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Ensure your OpenAI API key is correctly set
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -13,37 +13,47 @@ exports.handler = async (event) => {
         "Authorization": `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4-turbo-preview", // Specify the GPT model you're using
-        prompt: `${question}`, // Pass the question as prompt
-        temperature: 0.7,
-        max_tokens: 150,
+        model: "gpt-4-turbo-preview", // Correctly specify the GPT model you're using
+        messages: [{ role: "user", content: question }], // Adjust according to OpenAI's API requirements
       })
     });
 
     if (!response.ok) {
-      // Handle errors from the OpenAI API
-      throw new Error(`Error from OpenAI: ${response.statusText}`);
+      // Log and throw error for non-2xx responses to catch block
+      const errorBody = await response.text(); // Attempt to read the response text
+      console.error(`OpenAI API Error Response: ${errorBody}`);
+      throw new Error(`Error from OpenAI: ${response.statusText} (Status ${response.status})`);
     }
 
     const data = await response.json();
 
-    // Extracting the text from the first choice (ensure to validate the response structure)
-    const answerText = data.choices && data.choices.length > 0 ? data.choices[0].text : "No answer was provided.";
+    // Ensure the API response structure is as expected
+    if (!data.choices || data.choices.length === 0 || !data.choices[0].message || !data.choices[0].message.content) {
+      console.error('Unexpected OpenAI API response structure:', JSON.stringify(data));
+      throw new Error('Unexpected response structure from OpenAI API.');
+    }
+
+    // Extracting the text from the first choice
+    const answerText = data.choices[0].message.content;
 
     return {
       statusCode: 200,
       headers: {
-        "Access-Control-Allow-Origin": "https://main--scintillating-pika-68754f.netlify.app",
+        "Access-Control-Allow-Origin": "*", // Consider tightening the CORS policy for production
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
       },
-      body: JSON.stringify({ answer: answerText }), // Return the answer text in the response body
+      body: JSON.stringify({ answer: answerText }),
     };
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Server Error:', error);
+    // Return a more detailed error message to help with debugging
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "An error occurred while processing your request." })
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({ error: error.message })
     };
   }
 };
