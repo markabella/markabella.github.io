@@ -5,7 +5,7 @@ function submitQuestion() {
 
   if (userQuestion) {
     // Replace YOUR_NETLIFY_SITE with your actual Netlify site domain
-    fetch(`https://YOUR_NETLIFY_SITE.netlify.app/.netlify/functions/yourFunction?q=${encodeURIComponent(userQuestion)}`)
+    fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/yourFunction?q=${encodeURIComponent(userQuestion)}`)
       .then(response => response.json())
       .then(data => {
         responseElement.innerText = `Answer: ${data.answer}`;
