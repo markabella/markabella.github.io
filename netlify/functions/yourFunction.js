@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   const question = event.queryStringParameters.q || "Ask me a question.";
+  const prompt = `As Saint John Climacus, author of "The Ladder of Divine Ascent," answer the following question in a manner consistent with the teachings found in the book: ${question}`;
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Ensure your OpenAI API key is correctly set
 
   try {
@@ -14,7 +15,10 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         model: "gpt-4-turbo-preview", // Correctly specify the GPT model you're using
-        messages: [{ role: "user", content: question }], // Adjust according to OpenAI's API requirements
+        prompt: prompt,
+        temperature: 0.2, // Adjust for creativity. Lower might be more consistent with source material
+        max_tokens: 150,
+        // messages: [{ role: "user", content: question }], // Adjust according to OpenAI's API requirements
       })
     });
 
