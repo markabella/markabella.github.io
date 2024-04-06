@@ -15,10 +15,9 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         model: "gpt-4-turbo-preview", // Correctly specify the GPT model you're using
-        prompt: prompt,
         temperature: 0.2, // Adjust for creativity. Lower might be more consistent with source material
         max_tokens: 150,
-        // messages: [{ role: "user", content: question }], // Adjust according to OpenAI's API requirements
+        messages: [{ role: "user", content: prompt }], // Adjust according to OpenAI's API requirements
       })
     });
 
