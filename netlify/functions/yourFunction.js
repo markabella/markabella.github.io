@@ -22,10 +22,15 @@ exports.handler = async (event) => {
   const data = await response.json();
 
   return {
+  return {
     statusCode: 200,
     headers: {
-      "Access-Control-Allow-Origin": "*", // Make sure CORS policy allows your GitHub Pages domain
+      // Replace "*" with your specific domain to tighten security, e.g., "https://yourdomain.com"
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      // Add any other headers as needed
     },
-    body: JSON.stringify({ answer: data.choices[0].text.trim() }),
+    body: JSON.stringify({ /* your response body */ }),
   };
 };
