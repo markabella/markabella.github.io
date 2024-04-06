@@ -8,30 +8,32 @@
     <!-- Include Bootstrap CSS for styling and responsiveness -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-  #ladderLoader {
-    font-size: 24px;
-    text-align: center;
-    position: relative; /* Ensures a positioning context for the climber */
-    height: 100px; /* Set a fixed height for the ladderLoader */
-    overflow: hidden; /* Prevents overflow from being visible */
+  <style>
+  .ladder-container {
+    position: relative; /* Establishes a positioning context */
+    text-align: center; /* Centers the ladder */
+    font-size: 24px; /* Adjust size as needed */
+  }
+
+  #ladder {
+    display: inline-block; /* Allows for vertical alignment */
+    line-height: 1.2; /* Adjust spacing between lines */
   }
 
   #climber {
-    position: absolute;
-    bottom: 0; /* Start from the bottom */
-    animation: climb 4s linear infinite; /* Adjusted duration and timing function */
+    position: absolute; /* Positions the climber absolutely within .ladder-container */
+    top: 0; /* Start climbing from the bottom. Adjust as needed or animate */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Offset by half its width to truly center it */
+    animation: climb 4s linear infinite; /* Example animation */
   }
 
   @keyframes climb {
-    0% { bottom: 0; }
-    100% { bottom: 100%; } /* Ensure this matches the height of the ladderLoader */
+    from { top: 100%; }
+    to { top: 0; }
   }
+</style>
 
-  .hidden {
-    display: none;
-  }
-   </style>
 </head>
     
 <body>
