@@ -20,8 +20,7 @@ exports.handler = async (event) => {
   });
 
   const data = await response.json();
-
-  return {
+  
   return {
     statusCode: 200,
     headers: {
