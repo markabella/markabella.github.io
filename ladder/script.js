@@ -1,16 +1,24 @@
 function submitQuestion() {
-
-    const ladderLoader = document.getElementById('ladderLoader');
+    const searchBook = document.getElementById('searchBookOption').checked;
     const questionBox = document.getElementById('userQuestion');
-    const responseElement = document.getElementById('response');
     const userQuestion = questionBox.value.trim();
-    responseElement.innerText = "";
+    const responseElement = document.getElementById('response');
+    const ladderLoader = document.getElementById('ladderLoader');
     const submitButton = document.querySelector("button");
-    submitButton.disabled = true; // Disable button
-    
-    // Show the ladder loader
+
+    // Clear previous response and disable the button
+    responseElement.innerText = "";
+    submitButton.disabled = true;
     ladderLoader.classList.remove('hidden');
 
+    if (searchBook) {
+        // Placeholder for search functionality
+        // Ideally, this would be an API call or search function that queries the book's content
+        const searchResult = "This is a placeholder result relevant to: " + userQuestion;
+        responseElement.innerText = searchResult;
+        ladderLoader.classList.add('hidden');
+        submitButton.disabled = false;
+    } else {
     fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/answerQuestion?q=${encodeURIComponent(userQuestion)}`)
         .then(response => {
             if (!response.ok) {
@@ -35,6 +43,7 @@ function submitQuestion() {
             responseElement.innerText = `Error fetching response: ${error.message}`;
             submitButton.disabled = false;
         });
+     }
 }
 
 document.getElementById('userQuestion').addEventListener('keypress', function(event) {
