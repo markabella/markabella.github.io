@@ -36,3 +36,12 @@ function submitQuestion() {
             submitButton.disabled = false;
         });
 }
+
+document.getElementById('userQuestion').addEventListener('keypress', function(event) {
+    if (event.key === "Enter") {
+        // Prevent the default action to stop submitting the form
+        event.preventDefault();
+        // Call the submitQuestion function
+        submitQuestion();
+    }
+});
