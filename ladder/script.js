@@ -54,3 +54,34 @@ document.getElementById('userQuestion').addEventListener('keypress', function(ev
         submitQuestion();
     }
 });
+
+function loadAndSearchText(query) {
+    fetch('ladderdivine.txt')
+        .then(response => response.text())
+        .then(text => searchInText(text, query))
+        .then(results => displayResults(results))
+        .catch(error => console.error("Failed to load or search the text", error));
+}
+
+function searchInText(text, query) {
+    const lines = text.split('\n');
+    const matches = [];
+    lines.forEach((line, index) => {
+        if (line.toLowerCase().includes(query.toLowerCase())) {
+            // Capture the line and some context, e.g., the line itself and one line before and after
+            const context = (index > 0 ? lines[index - 1] : '') + '\n' + line + '\n' + (lines[index + 1] || '');
+            matches.push(context);
+        }
+    });
+    return matches;
+}
+
+function displayResults(results) {
+    const responseElement = document.getElementById('response');
+    if (results.length > 0) {
+        responseElement.innerHTML = results.join('<br><br>').substring(0, 1000) + (results.join('<br><br>').length > 1000 ? '...' : ''); // Display up to 1000 characters for brevity
+    } else {
+        responseElement.innerText = 'No matches found.';
+    }
+}
+
