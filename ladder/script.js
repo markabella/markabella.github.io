@@ -14,7 +14,7 @@ function submitQuestion() {
     if (searchBook) {
         // Placeholder for search functionality
         // Ideally, this would be an API call or search function that queries the book's content
-        const searchResult = "This is a placeholder result relevant to: " + userQuestion;
+        const searchResult = "Coming soon, direct quotes regarding: " + userQuestion;
         responseElement.innerText = searchResult;
         ladderLoader.classList.add('hidden');
         submitButton.disabled = false;
