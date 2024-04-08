@@ -4,6 +4,8 @@ function submitQuestion() {
     const questionBox = document.getElementById('userQuestion');
     const responseElement = document.getElementById('response');
     const userQuestion = questionBox.value.trim();
+    const submitButton = document.querySelector("button");
+    submitButton.disabled = true; // Disable button
     
     // Show the ladder loader
     ladderLoader.classList.remove('hidden');
@@ -24,13 +26,12 @@ function submitQuestion() {
             // Hide the ladder loader
             ladderLoader.classList.add('hidden');
             responseElement.innerText = `Answer: ${answer}`;
+            submitButton.disabled = false; // Re-enable button upon completion
         })
         .catch(error => {
             console.error('Error:', error);
-            // Display a more informative error message, including the error caught
-            // replyNotice.style.display = 'none';
-            // Hide the ladder loader
             ladderLoader.classList.add('hidden');
             responseElement.innerText = `Error fetching response: ${error.message}`;
+            submitButton.disabled = false;
         });
 }
