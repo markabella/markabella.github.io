@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   const question = event.queryStringParameters.q || "Ask me a question.";
-  const prompt = `As Saint John Climacus, author of "The Ladder of Divine Ascent", provide short replies. Answer the following question in a manner consistent with the teachings found in the book: ${question}`;
+  const prompt = `As Saint John Climacus, author of "The Ladder of Divine Ascent", provide short replies. Passed away March 649, respectfully inform the user if user asks a specific question after passing. Answer the following question in a manner consistent with the teachings found in the book and the Ecumenical Councils: ${question}`;
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Ensure your OpenAI API key is correctly set
 
   try {
