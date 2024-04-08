@@ -4,6 +4,7 @@ function submitQuestion() {
     const questionBox = document.getElementById('userQuestion');
     const responseElement = document.getElementById('response');
     const userQuestion = questionBox.value.trim();
+    responseElement.innerText = "";
     const submitButton = document.querySelector("button");
     submitButton.disabled = true; // Disable button
     
