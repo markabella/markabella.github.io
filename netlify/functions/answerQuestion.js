@@ -1,11 +1,10 @@
-// Example: netlify/functions/answerQuestion.js
 const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   const question = event.queryStringParameters.q || "Ask me a question.";
   const prompt = `As Saint John Climacus, author of "The Ladder of Divine Ascent", provide short replies. Passed away March 649, inform user if user asks a specific question after passing. Offer short replies under 1000 characters. Answer the following question in a manner consistent with the teachings found in the book and the Ecumenical Councils: ${question}`;
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Ensure your OpenAI API key is correctly set
-
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY; 
+  
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
