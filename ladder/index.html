@@ -32,9 +32,8 @@
         .hidden {
             display: none;
 
-        .position-relative {
+         .form-group {
             position: relative;
-            width: 100%;
         }
 
         .clear-button {
@@ -48,7 +47,7 @@
         }
 
         .clear-button:hover {
-            color: grey;
+            color: black;
         }
 </style>
 </head>
@@ -57,15 +56,13 @@
     <div class="container">
         <h1 class="mt-5">Ask Saint John Climacus</h1>
         <div class="row">
-            <div class="col-12 col-md-8">
-                 <div class="container">
-                    <div class="form-group position-relative">
+                <div class="col-12 col-md-8">
+                    <div class="form-group">
                         <input type="text" id="userQuestion" class="form-control" placeholder="Your question...">
                         <button id="clearButton" class="clear-button">X</button>
                     </div>
+                    <button onclick="submitQuestion()" class="btn btn-primary">Submit</button>
                 </div>
-                <button onclick="submitQuestion()" class="btn btn-primary">Submit</button>
-            </div>
         </div>
         <p id="response" class="mt-3"></p>
 
