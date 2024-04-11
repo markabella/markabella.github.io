@@ -9,32 +9,48 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-#ladderLoader {
-    transform: translate(0%, -50%);
-    max-height: 100%;
-    min-height: 300px;
-    overflow: hidden;
-}
+        #ladderLoader {
+            transform: translate(0%, -50%);
+            max-height: 100%;
+            min-height: 300px;
+            overflow: hidden;
+        }
 
-#climber {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: climb 8s linear infinite;
-}
+        #climber {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: climb 8s linear infinite;
+        }
 
-@keyframes climb {
-    0% { top: 100%; }
-    100% { top: 0; }
-}
+        @keyframes climb {
+            0% { top: 100%; }
+            100% { top: 0; }
+        }
 
-.hidden {
-    display: none;
-}
+        .hidden {
+            display: none;
 
+        .position-relative {
+            position: relative;
+            width: 100%;
+        }
+
+        .clear-button {
+            position: absolute;
+            right: 10px; /* Adjust based on padding */
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .clear-button:hover {
+            color: grey;
+        }
 </style>
-
 </head>
     
 <body>
@@ -42,9 +58,11 @@
         <h1 class="mt-5">Ask Saint John Climacus</h1>
         <div class="row">
             <div class="col-12 col-md-8">
-                <!-- Use Bootstrap form classes for styling -->
-                <div class="form-group">
-                    <input type="text" id="userQuestion" class="form-control" placeholder="Your question...">
+                 <div class="container">
+                    <div class="form-group position-relative">
+                        <input type="text" id="userQuestion" class="form-control" placeholder="Your question...">
+                        <button id="clearButton" class="clear-button">X</button>
+                    </div>
                 </div>
                 <button onclick="submitQuestion()" class="btn btn-primary">Submit</button>
             </div>
