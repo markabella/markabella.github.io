@@ -46,3 +46,9 @@ document.getElementById('userQuestion').addEventListener('keypress', function(ev
         submitQuestion();
     }
 });
+
+document.getElementById('clearButton').addEventListener('click', function() {
+            const userQuestionInput = document.getElementById('userQuestion');
+            userQuestionInput.value = ''; // Clear the input
+            userQuestionInput.focus(); // Set focus back to the input
+});
