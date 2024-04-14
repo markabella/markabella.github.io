@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1713037267,
+	"version": 1713058512,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -9,12 +9,12 @@
 		"images/peer-sheet0.png",
 		"images/peer-sheet1.png",
 		"images/peerlaser-sheet0.png",
+		"images/tilemap.png",
 		"icon-16.png",
 		"icon-32.png",
 		"icon-114.png",
 		"icon-128.png",
 		"icon-256.png",
-		"loading-logo.png",
 		"c2mp-net.js",
 		"c2mp-peer.js",
 		"c2mp.js",
