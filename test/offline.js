@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1713407228,
+	"version": 1713458609,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -22,6 +22,8 @@
 		"images/os_root-sheet0.png",
 		"images/os_smoke-sheet0.png",
 		"images/os_shadow-sheet0.png",
+		"images/touch_left-sheet0.png",
+		"images/touch_down-sheet0.png",
 		"images/os_peer-sheet0.png",
 		"images/os_peer-sheet1.png",
 		"images/os_peer-sheet2.png",
