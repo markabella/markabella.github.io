@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1713492562,
+	"version": 1713562406,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -37,6 +37,7 @@
 		"images/touch_left-sheet0.png",
 		"images/tilemap.png",
 		"images/tiledbackground.png",
+		"images/tiledbackground2.png",
 		"media/au_explosion.m4a",
 		"media/au_explosion.ogg",
 		"media/au_force1.m4a",
@@ -59,6 +60,7 @@
 		"icon-128.png",
 		"icon-256.png",
 		"loading-logo.png",
+		"30.txt",
 		"c2mp-net.js",
 		"c2mp-peer.js",
 		"c2mp.js",
