@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1713638904,
+	"version": 1713666778,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -23,7 +23,8 @@
 		"images/os_smoke-sheet0.png",
 		"images/os_shadow-sheet0.png",
 		"images/os_church-sheet0.png",
-		"images/solidbarrier-sheet0.png",
+		"images/solidbarrierin-sheet0.png",
+		"images/tiledbackground3.png",
 		"images/os_peer-sheet0.png",
 		"images/os_peer-sheet1.png",
 		"images/os_peer-sheet2.png",
@@ -62,6 +63,7 @@
 		"icon-256.png",
 		"loading-logo.png",
 		"30.txt",
+		"the_ladder_of_divine_ascent_monastery_of_st_catherine_sinai_12th_century2.jpg",
 		"c2mp-net.js",
 		"c2mp-peer.js",
 		"c2mp.js",
