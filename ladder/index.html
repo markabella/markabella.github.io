@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Responsive viewport meta tag -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ask Saint John Climacus</title>
-    <!-- Include Bootstrap CSS for styling and responsiveness -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-<style>
+    <style>
+        body, html {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
         #ladderLoader {
             transform: translate(0%, -50%);
             max-height: 100%;
@@ -51,33 +55,46 @@
         .clear-button:hover {
             color: black;
         }
-</style>
+
+        /* Footer styling */
+        footer {
+            margin-top: auto;
+            padding: 10px;
+            background-color: #f8f9fa; /* Light gray background */
+            width: 100%;
+            position: sticky;
+        }
+		
+		footer p {
+            color: #6c757d; /* Muted text color */
+            font-size: 0.8rem; /* Optional: Slightly smaller text */
+        }
+    </style>
 </head>
-    
 <body>
     <div class="container">
         <h1 class="mt-5">Ask Saint John Climacus</h1>
         <div class="row">
-                <div class="col-12 col-md-8">
-                    <div class="form-group position-relative">
-                        <input type="text" id="userQuestion" class="form-control" placeholder="Your question...">
-                        <button id="clearButton" class="clear-button">X</button>
-                    </div>
-                    <button onclick="submitQuestion()" class="btn btn-primary">Submit</button>
+            <div class="col-12 col-md-8">
+                <div class="form-group position-relative">
+                    <input type="text" id="userQuestion" class="form-control" placeholder="Your question...">
+                    <button id="clearButton" class="clear-button">X</button>
                 </div>
+                <button onclick="submitQuestion()" class="btn btn-primary">Submit</button>
+            </div>
         </div>
         <p id="response" class="mt-3"></p>
 
         <div id="ladderLoader" class="hidden">
             <div id="climber">
-            <img src="ladder2.svg" alt="Ladder" style="width: 100%; height: auto;">
+                <img src="ladder2.svg" alt="Ladder" style="width: 100%; height: auto;">
             </div>
         </div>
-    </div>
-	
-    <footer style="text-align: center; margin-top: 20px;">
-        <p>AI can make mistakes. Check important info with your local parish priest.</p>
+ 
+    <footer>
+        <p>AI can make mistakes. Check info with your local Eastern Orthodox priest.</p>
     </footer>
+</div>
 
     <script src="script.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
