@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multiplayer Chat UI for Construct 2 Game</title>
+    <script>
+      // Stub for development/testing if Construct 2 environment isn't available
+      if (typeof window.cr_getC2Runtime === 'undefined') {
+        window.cr_getC2Runtime = function() {
+          console.log('Using stubbed Construct 2 runtime');
+          return {
+            getObjectByUID: function(uid) {
+              const objects = {
+                21: { uid: 21, visible: true, text: '15.0 steps completed', y: 0 },
+                12: { uid: 12, visible: true, text: 'Log text', y: 0 },
+                29: { 
+                  uid: 29, 
+                  arr: [
+                    [['<Player> Hello world']],
+                    [['System message']],
+                    [['Error occurred']],
+                    [['<Admin> Test message']]
+                  ]
+                },
+                31: { uid: 31, visible: true, y: 0 },
+                32: { uid: 32, visible: true, y: 0 },
+                68: { uid: 68, visible: true, y: 0 }
+              };
+              return objects[uid] || { visible: false, y: 0 };
+            },
+            all_global_vars: [
+              { name: 'Username', data: 'Player' }
+            ]
+          };
+        };
+        
+        window.c2_callFunction = function(name, params) {
+          console.log('Called C2 function:', name, 'with params:', params);
+          return null;
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

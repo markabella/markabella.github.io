@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --red-accent: #ff3333;
+  --system-bg: rgba(0, 0, 0, 0.75);
+  --chat-bg: rgba(20, 20, 20, 0.85);
+  --menu-bg: rgba(40, 40, 40, 0.85);
+  --player-chat: #e2f0ff;
+  --system-message: #cccccc;
+  --system-error: #ff6666;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#UI {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+#UI * {
+  pointer-events: auto;
+}
+
+.login-page {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+#play-menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--menu-bg);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+#play-menu button {
+  margin: 5px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#play-menu button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.red-bg {
+  background: var(--red-accent) !important;
+}
+
+#chat-window {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 300px;
+  height: 300px;
+  background: var(--chat-bg);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+#chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  color: var(--system-message);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+#chat::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chat::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.message {
+  margin-bottom: 5px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease;
+  word-break: break-word;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.player-chat {
+  color: var(--player-chat);
+  background: rgba(100, 150, 255, 0.1);
+}
+
+.system-err {
+  color: var(--system-error);
+  background: rgba(255, 100, 100, 0.1);
+}
+
+.chat-input-container {
+  display: flex;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  outline: none;
+}
+
+#steps-window {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 250px;
+  background: var(--system-bg);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+#game-progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, var(--red-accent) 0%, rgba(153, 153, 153, 0.6) 0%);
+  transition: background 0.3s ease;
+}
+
+.ui-buttons {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+.ui-button {
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ui-button:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
