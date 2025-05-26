@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fast Alphabet Phonics Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        h1 {
+            margin: 10px 0;
+            font-size: clamp(20px, 5vw, 32px);
+        }
+        
+        #gameCanvas {
+            border: 3px solid white;
+            border-radius: 10px;
+            background: #87CEEB;
+            display: block;
+            margin: 10px auto;
+            cursor: crosshair;
+            max-width: 100%;
+            max-height: 60vh;
+            touch-action: none;
+        }
+        
+        .controls {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 5px;
+            border-radius: 20px;
+            font-size: clamp(14px, 3vw, 16px);
+            cursor: pointer;
+            transition: transform 0.2s;
+            touch-action: manipulation;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .upload-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .file-input {
+            margin: 5px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            max-width: 200px;
+        }
+        
+        #gameStatus {
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: bold;
+            margin: 5px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Landscape orientation adjustments */
+        @media (orientation: landscape) and (max-height: 600px) {
+            h1 {
+                margin: 5px 0;
+                font-size: 20px;
+            }
+            
+            .upload-section {
+                padding: 5px;
+                margin-bottom: 5px;
+            }
+            
+            button {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            .controls {
+                margin: 5px 0;
+            }
+            
+            #gameStatus {
+                margin: 3px 0;
+                padding: 5px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Alphabet Phonics Action Game</h1>
+    
+    <div class="upload-section">
+        <audio id="gameAudio" preload="auto">
+            <source src="alphabet-song.mp3" type="audio/mpeg">
+            <source src="alphabet-song.ogg" type="audio/ogg">
+            <source src="alphabet-song.wav" type="audio/wav">
+        </audio>
+
+        <button onclick="startGame()" id="startBtn" disabled>🎮 Start</button>
+        <button onclick="pauseGame()" id="pauseBtn" disabled>⏸️ Pause</button>
+        <button onclick="resetGame()">🔄 Reset</button>
+		<button onclick="toggleMute()" id="muteBtn">🔊 Sound On</button>
+    </div>
+    
+    <div id="gameStatus">Click "Start Demo" to play without audio</div>
+    
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        // Game constants
+        const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        const GAME_PHASES = {
+            LEARNING: { start: 0, end: 72, spawnRate: 0.015, maxLetters: 4, speedRange: [0.5, 1.5] },
+            SPEEDUP: { start: 72, end: 104, spawnRate: 0.025, maxLetters: 7, speedRange: [1.0, 2.5] },
+            FINALE: { start: 104, end: 114, spawnRate: 0.1, maxLetters: 21, speedRange: [2.5, 3.5] },
+            CELEBRATION: { start: 114, end: 124 }
+        };
+        
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let gameScale = 1;
+        let gameState = 'waiting';
+        let score = 0;
+        let gameTime = 0;
+        let maxGameTime = 124;
+        let lastTime = 0;
+        let song = null;
+        let lives = 3;
+        let celebrationStartTime = 0;
+        let audioEnabled = true;
+        let audioInitialized = false;
+        
+        // Game objects
+        let player = {
+            x: 0,
+            y: 0,
+            size: 50,
+            letter: 'A'
+        };
+        
+        let letters = [];
+        let particles = [];
+        let bullets = [];
+        let pointerX = 0;
+        
+        let cameraShake = { x: 0, y: 0, intensity: 0 };
+        
+        // Stats tracking
+        let stats = {
+            totalShots: 0,
+            chainExplosions: 0,
+            lettersBlocked: 0,
+            maxScore: 0
+        };
+        
+        // Set canvas size based on viewport
+        function resizeCanvas() {
+            const maxWidth = Math.min(window.innerWidth - 20, 800);
+            const maxHeight = Math.min(window.innerHeight * 0.6, 600);
+            const aspectRatio = 800 / 600;
+            
+            if (maxWidth / maxHeight > aspectRatio) {
+                canvas.height = maxHeight;
+                canvas.width = maxHeight * aspectRatio;
+            } else {
+                canvas.width = maxWidth;
+                canvas.height = maxWidth / aspectRatio;
+            }
+            
+            gameScale = canvas.width / 800;
+            
+            // Update player position
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 80 * gameScale;
+            player.size = 50 * gameScale;
+            pointerX = player.x;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Prevent scrolling on mobile
+        document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        
+        // Unified input handling
+        function updatePointerPosition(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            pointerX = (clientX - rect.left) * (canvas.width / rect.width);
+        }
+        
+        // Mouse events
+        canvas.addEventListener('mousemove', e => updatePointerPosition(e.clientX, e.clientY));
+        canvas.addEventListener('click', handleCanvasClick);
+        
+        // Touch events
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            updatePointerPosition(touch.clientX, touch.clientY);
+            handleCanvasClick(e);
+        });
+        
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            if (e.touches.length > 0) {
+                updatePointerPosition(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space' && gameState === 'playing') {
+                e.preventDefault();
+                shoot();
+            }
+        });
+        
+        // Handle canvas clicks/taps
+        function handleCanvasClick(e) {
+            if (gameState !== 'playing') return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clickY = e.touches ? e.touches[0].clientY : e.clientY;
+            const x = (clickX - rect.left) * (canvas.width / rect.width);
+            const y = (clickY - rect.top) * (canvas.height / rect.height);
+            
+            // Check if clicked on player
+            const playerDist = Math.sqrt((x - player.x) ** 2 + (y - player.y) ** 2);
+            if (playerDist < player.size) {
+                shoot();
+                return;
+            }
+            
+            // Check if clicked on a letter
+            let targetLetter = null;
+            let closestDist = Infinity;
+            
+            for (let letter of letters) {
+                const letterDist = Math.sqrt((x - letter.x) ** 2 + (y - letter.y) ** 2);
+                if (letterDist < letter.size && letterDist < closestDist) {
+                    targetLetter = letter;
+                    closestDist = letterDist;
+                }
+            }
+            
+            if (targetLetter) {
+                // Move player to align with the letter and shoot
+                pointerX = targetLetter.x;
+                player.x = targetLetter.x;
+                
+                // Create a targeted bullet that will hit the letter
+                bullets.push({
+                    x: player.x,
+                    y: player.y - player.size/2,
+                    letter: player.letter,
+                    speed: 8 * gameScale,
+                    size: 20 * gameScale,
+                    targetY: targetLetter.y,
+                    isTargeted: true
+                });
+                
+                stats.totalShots++;
+                
+                // Advance to next letter
+                const currentIndex = ALPHABET.indexOf(player.letter);
+                player.letter = ALPHABET[(currentIndex + 1) % ALPHABET.length];
+                
+                return;
+            }
+            
+            // Otherwise move player to tap location and shoot normally
+            pointerX = x;
+            setTimeout(() => shoot(), 50); // Small delay to allow player to move
+        }
+        
+        // Get current game phase
+        function getCurrentPhase() {
+            for (let phase in GAME_PHASES) {
+                const p = GAME_PHASES[phase];
+                if (gameTime >= p.start && (!p.end || gameTime < p.end)) {
+                    return p;
+                }
+            }
+            return GAME_PHASES.LEARNING;
+        }
+        
+        // Shoot bullet
+        function shoot() {
+            bullets.push({
+                x: player.x,
+                y: player.y - player.size/2,
+                letter: player.letter,
+                speed: 8 * gameScale,
+                size: 20 * gameScale
+            });
+            
+            stats.totalShots++;
+            
+            // Advance to next letter
+            const currentIndex = ALPHABET.indexOf(player.letter);
+            player.letter = ALPHABET[(currentIndex + 1) % ALPHABET.length];
+        }
+        
+        // Get strategic letter based on game phase
+        function getStrategicLetter() {
+            const playerIndex = ALPHABET.indexOf(player.letter);
+            const phase = getCurrentPhase();
+            
+            // Define helpful letters (current and next few)
+            const helpfulLetters = [
+                player.letter,
+                ALPHABET[(playerIndex + 1) % ALPHABET.length],
+                ALPHABET[(playerIndex + 2) % ALPHABET.length],
+                ALPHABET[(playerIndex + 3) % ALPHABET.length]
+            ];
+            
+            // Check what's on screen
+            const onScreenLetters = letters.map(l => l.char);
+            const hasPlayerLetter = onScreenLetters.includes(player.letter);
+            
+            // Phase-specific letter selection
+            if (phase === GAME_PHASES.FINALE || phase === GAME_PHASES.CELEBRATION) {
+                // Finale: guarantee matching opportunities
+                return player.letter;
+            } else if (phase === GAME_PHASES.SPEEDUP) {
+                // Speed up: mostly helpful letters
+                if (!hasPlayerLetter && Math.random() < 0.7) {
+                    return player.letter;
+                }
+                return Math.random() < 0.8 ? 
+                    helpfulLetters[Math.floor(Math.random() * helpfulLetters.length)] :
+                    ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+            } else {
+                // Learning phase: balanced mix
+                if (!hasPlayerLetter && Math.random() < 0.6) {
+                    return player.letter;
+                }
+                return Math.random() < 0.5 ? 
+                    helpfulLetters[Math.floor(Math.random() * helpfulLetters.length)] :
+                    ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+            }
+        }
+        
+        // Add letter to game
+        function addLetter() {
+            const phase = getCurrentPhase();
+            const speed = (phase.speedRange[0] + Math.random() * (phase.speedRange[1] - phase.speedRange[0])) * gameScale;
+            
+            letters.push({
+                x: Math.random() * (canvas.width - 60 * gameScale) + 30 * gameScale,
+                y: -40 * gameScale,
+                char: getStrategicLetter(),
+                size: (30 + Math.random() * 15) * gameScale,
+                speed: speed
+            });
+        }
+        
+        // Create particles
+        function addParticles(x, y, color, count = 8) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8 * gameScale,
+                    vy: (Math.random() - 0.5) * 8 * gameScale - 2 * gameScale,
+                    life: 30,
+                    maxLife: 30,
+                    color: color
+                });
+            }
+        }
+        
+        // Chain explosion effect
+        function explodeAllLetters() {
+            let bonusPoints = 0;
+            stats.chainExplosions++;
+            
+            // Explode all letters
+            letters.forEach(letter => {
+                bonusPoints += 15;
+                addParticles(letter.x, letter.y, '#FFD700');
+            });
+            
+            letters = [];
+            score += bonusPoints;
+            stats.maxScore = Math.max(stats.maxScore, score);
+            
+            // Screen flash
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 4 * gameScale,
+                    vy: (Math.random() - 0.5) * 4 * gameScale,
+                    life: 40,
+                    maxLife: 40,
+                    color: '#FFFF00'
+                });
+            }
+            
+            // Add new letters after delay (except during finale)
+            if (gameTime < GAME_PHASES.FINALE.end) {
+                setTimeout(() => {
+                    if (gameState === 'playing' && letters.length === 0) {
+                        for (let i = 0; i < 6; i++) {
+                            addLetter();
+                        }
+                    }
+                }, 500);
+            }
+            
+            return bonusPoints;
+        }
+        
+        // Update game logic
+        function updateGame(deltaTime) {
+            if (gameState !== 'playing') return;
+            
+            gameTime += deltaTime / 1000;
+            
+            // Update player position
+            player.x = Math.max(player.size/2, Math.min(canvas.width - player.size/2, pointerX));
+            
+            // Update bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                
+                // For targeted bullets, calculate speed to intercept
+                if (bullet.isTargeted && bullet.targetY) {
+                    const distToTarget = bullet.targetY - bullet.y;
+                    if (distToTarget > 0) {
+                        bullet.speed = Math.min(12 * gameScale, distToTarget * 0.3);
+                    }
+                }
+                
+                bullet.y -= bullet.speed;
+                
+                if (bullet.y < -20 * gameScale) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collisions with letters
+                for (let j = letters.length - 1; j >= 0; j--) {
+                    const letter = letters[j];
+                    const distance = Math.sqrt((bullet.x - letter.x) ** 2 + (bullet.y - letter.y) ** 2);
+                    
+                    if (distance < 25 * gameScale) {
+                        if (bullet.letter === letter.char) {
+                            // Matching - chain explosion!
+                            explodeAllLetters();
+                            score += 25;
+                            addParticles(letter.x, letter.y, '#FF00FF');
+                        } else {
+                            // Non-matching - just remove
+                            score += 5;
+                            stats.lettersBlocked++;
+                            addParticles(letter.x, letter.y, '#FFFF00');
+                            letters.splice(j, 1);
+                        }
+                        bullets.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+            
+            // Update letters
+            for (let i = letters.length - 1; i >= 0; i--) {
+                const letter = letters[i];
+                letter.y += letter.speed;
+                
+                // Check player collision
+                const distance = Math.sqrt((letter.x - player.x) ** 2 + (letter.y - player.y) ** 2);
+                
+                if (distance < 40 * gameScale) {
+                    if (letter.char === player.letter) {
+                        // Matching - chain explosion!
+                        explodeAllLetters();
+                        score += 25;
+                        addParticles(letter.x, letter.y, '#FF00FF');
+                        
+                        // Advance player letter
+                        const currentIndex = ALPHABET.indexOf(player.letter);
+                        player.letter = ALPHABET[(currentIndex + 1) % ALPHABET.length];
+                        break;
+                    } else {
+                        // Non-matching
+                        score += 5;
+                        stats.lettersBlocked++;
+                        addParticles(letter.x, letter.y, '#FFFF00');
+                        letters.splice(i, 1);
+                        
+                        // Advance player letter
+                        const currentIndex = ALPHABET.indexOf(player.letter);
+                        player.letter = ALPHABET[(currentIndex + 1) % ALPHABET.length];
+                    }
+                    continue;
+                }
+                
+                // Letter reached bottom
+                if (letter.y > canvas.height - 50 * gameScale) {
+                    lives--;
+                    score = Math.max(0, score - 10);
+                    addParticles(letter.x, letter.y, '#FF0000');
+                    letters.splice(i, 1);
+                    
+                    // Trigger screen shake
+                    cameraShake.intensity = 20 * gameScale;
+                    
+                    if (lives <= 0) {
+                        endGame();
+                        return;
+                    }
+                }
+            }
+            
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2 * gameScale;
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            // Spawn letters
+            const phase = getCurrentPhase();
+            if (phase.spawnRate && letters.length < phase.maxLetters && Math.random() < phase.spawnRate) {
+                addLetter();
+            }
+            
+			// Handle finale
+            if (gameTime >= GAME_PHASES.FINALE.start && gameTime < GAME_PHASES.CELEBRATION.end) {
+                if (gameTime >= GAME_PHASES.CELEBRATION.start && gameTime < GAME_PHASES.CELEBRATION.start + 1) {
+                    // Explode everything
+                    letters.forEach(letter => {
+                        addParticles(letter.x, letter.y, '#FFD700');
+                        score += 20;
+                    });
+                    letters = [];
+                    createScreenFlash();
+                    setTimeout(() => {
+                        celebrationStartTime = gameTime;
+                        gameState = 'celebration';
+                    }, 1500);
+                }
+                return;
+            }
+            
+            // Update camera shake
+            if (cameraShake.intensity > 0) {
+                cameraShake.x = (Math.random() - 0.5) * cameraShake.intensity;
+                cameraShake.y = (Math.random() - 0.5) * cameraShake.intensity;
+                cameraShake.intensity *= 0.9; // Decay
+                if (cameraShake.intensity < 0.1) cameraShake.intensity = 0;
+            }
+            
+            // End game
+            if (gameTime >= maxGameTime) {
+                endGame();
+            }
+        }
+        
+        // Render game
+        function render() {
+            // Clear canvas
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Apply camera shake
+            ctx.save();
+            ctx.translate(cameraShake.x, cameraShake.y);
+            
+            if (gameState === 'celebration') {
+                renderCelebration();
+                ctx.restore();
+                return;
+            }
+            
+            // Draw letters
+            letters.forEach(letter => {
+                // Background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.beginPath();
+                ctx.arc(letter.x, letter.y, letter.size/2 + 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Letter text
+                ctx.fillStyle = letter.char === player.letter ? '#00FF00' : '#666666';
+                ctx.font = `bold ${letter.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(letter.char, letter.x, letter.y);
+            });
+            
+            // Draw bullets
+            bullets.forEach(bullet => {
+                // Trail
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.size/2 + 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bullet
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#FFA500';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Letter
+                ctx.fillStyle = '#000';
+                ctx.font = `bold ${bullet.size - 5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(bullet.letter, bullet.x, bullet.y);
+            });
+            
+            // Draw particles
+            particles.forEach(p => {
+                const alpha = p.life / p.maxLife;
+                ctx.fillStyle = p.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3 * gameScale, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw player
+            ctx.fillStyle = '#4169E1';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#FFF';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Player letter
+            ctx.fillStyle = '#FFF';
+            ctx.font = `bold ${24 * gameScale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(player.letter, player.x, player.y);
+            
+            // Draw UI
+            renderUI();
+            
+            // Restore camera transform
+            ctx.restore();
+        }
+		
+        function createScreenFlash() {
+            // Add many particles for screen flash effect
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 4 * gameScale,
+                    vy: (Math.random() - 0.5) * 4 * gameScale,
+                    life: 40,
+                    maxLife: 40,
+                    color: '#FFFF00'
+                });
+            }
+        }
+		
+        // Render celebration
+        function renderCelebration() {
+            const celebTime = gameTime - celebrationStartTime;
+            const hue = (celebTime * 50) % 360;
+            
+            // Rainbow background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, `hsl(${hue}, 70%, 60%)`);
+            gradient.addColorStop(0.5, `hsl(${(hue + 120) % 360}, 70%, 60%)`);
+            gradient.addColorStop(1, `hsl(${(hue + 240) % 360}, 70%, 60%)`);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Celebration particles
+            if (Math.random() < 0.3) {
+                for (let i = 0; i < 5; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: canvas.height + 20,
+                        vx: (Math.random() - 0.5) * 4 * gameScale,
+                        vy: -Math.random() * 8 * gameScale - 5 * gameScale,
+                        life: 120,
+                        maxLife: 120,
+                        color: `hsl(${Math.random() * 360}, 80%, 60%)`
+                    });
+                }
+            }
+            
+            // Update particles
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1 * gameScale;
+                p.life--;
+            });
+            
+            particles = particles.filter(p => p.life > 0);
+            
+            // Draw particles
+            particles.forEach(p => {
+                const alpha = p.life / p.maxLife;
+                ctx.fillStyle = p.color.replace('60%)', `60%, ${alpha})`);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4 * gameScale, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Stats box
+            const boxWidth = Math.min(canvas.width - 100 * gameScale, 600 * gameScale);
+            const boxHeight = 400 * gameScale;
+            const boxX = (canvas.width - boxWidth) / 2;
+            const boxY = 100 * gameScale;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+            
+            // Title
+            ctx.fillStyle = '#000';
+            ctx.font = `bold ${48 * gameScale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('PHONICS MASTER', canvas.width/2, boxY + 60 * gameScale);
+            
+            // Stats
+            ctx.font = `bold ${32 * gameScale}px Arial`;
+            ctx.fillStyle = '#4169E1';
+            ctx.fillText(`Final Score: ${score}`, canvas.width/2, boxY + 120 * gameScale);
+            
+            ctx.font = `bold ${24 * gameScale}px Arial`;
+            ctx.fillStyle = '#000';
+            ctx.fillText(`Total Shots: ${stats.totalShots}`, canvas.width/2, boxY + 170 * gameScale);
+            ctx.fillText(`Chain Explosions: ${stats.chainExplosions}`, canvas.width/2, boxY + 210 * gameScale);
+            ctx.fillText(`Letters Blocked: ${stats.lettersBlocked}`, canvas.width/2, boxY + 250 * gameScale);
+            
+            // Accuracy
+            const accuracy = stats.totalShots > 0 ? Math.round((stats.chainExplosions / stats.totalShots) * 100) : 0;
+            ctx.fillStyle = accuracy >= 50 ? '#00AA00' : '#AA6600';
+            ctx.fillText(`Chain Accuracy: ${accuracy}%`, canvas.width/2, boxY + 290 * gameScale);
+            
+            // Rating
+            let rating = accuracy >= 80 ? 'LEGENDARY' : 
+                        accuracy >= 60 ? 'EXCELLENT' : 
+                        accuracy >= 40 ? 'GREAT JOB' : 'AWESOME EFFORT';
+            
+            ctx.font = `bold ${28 * gameScale}px Arial`;
+            ctx.fillStyle = '#FF4500';
+            ctx.fillText(rating, canvas.width/2, boxY + 350 * gameScale);
+        }
+        
+        // Render UI
+        function renderUI() {
+            // Info panel
+            const uiWidth = Math.min(280 * gameScale, canvas.width * 0.9);
+            const uiHeight = 90 * gameScale;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(10 * gameScale, 10 * gameScale, uiWidth, uiHeight);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10 * gameScale, 10 * gameScale, uiWidth, uiHeight);
+            
+            ctx.fillStyle = '#000';
+            ctx.font = `bold ${18 * gameScale}px Arial`;
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 20 * gameScale, 35 * gameScale);
+            ctx.fillText(`Player: ${player.letter}`, 20 * gameScale, 60 * gameScale);
+            ctx.fillText(`Lives: ${lives}`, 20 * gameScale, 85 * gameScale);
+            
+            // Phase indicator
+            const phase = getCurrentPhase();
+            let phaseText = '';
+            let phaseColor = '#000';
+            
+            if (gameTime >= GAME_PHASES.CELEBRATION.start) {
+                phaseText = 'CELEBRATION TIME';
+                phaseColor = '#FF69B4';
+            } else if (gameTime >= GAME_PHASES.FINALE.start) {
+                phaseText = 'FINALE';
+                phaseColor = '#00AA00';
+            } else if (gameTime >= GAME_PHASES.SPEEDUP.start) {
+                phaseText = 'SPEED UP';
+                phaseColor = '#FF8800';
+            }
+            
+            if (phaseText) {
+                ctx.fillStyle = phaseColor;
+                ctx.font = `bold ${16 * gameScale}px Arial`;
+                ctx.fillText(phaseText, 150 * gameScale, 35 * gameScale);
+            }
+            
+            // Instructions (early game only)
+            if (gameTime < 30 || stats.chainExplosions < 3) {
+                const instructionWidth = 200 * gameScale;
+                const instructionHeight = 50 * gameScale;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(canvas.width - instructionWidth - 10 * gameScale, 10 * gameScale, instructionWidth, instructionHeight);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(canvas.width - instructionWidth - 10 * gameScale, 10 * gameScale, instructionWidth, instructionHeight);
+                
+                ctx.fillStyle = '#000';
+                ctx.font = `bold ${14 * gameScale}px Arial`;
+                ctx.textAlign = 'left';
+                ctx.fillText('Tap letters/player to shoot!', canvas.width - instructionWidth, 35 * gameScale);
+            }
+            
+            // Progress bar
+            const progress = gameTime / maxGameTime;
+            const progressBarWidth = canvas.width - 20 * gameScale;
+            const progressBarHeight = 20 * gameScale;
+            const progressBarY = canvas.height - 30 * gameScale;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(10 * gameScale, progressBarY, progressBarWidth, progressBarHeight);
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(10 * gameScale, progressBarY, progressBarWidth * progress, progressBarHeight);
+            
+            // Time
+            const timeLeft = Math.max(0, maxGameTime - gameTime);
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = Math.floor(timeLeft % 60);
+            ctx.fillStyle = '#000';
+            ctx.font = `bold ${16 * gameScale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText(`${minutes}:${seconds.toString().padStart(2, '0')}`, canvas.width/2, progressBarY + 15 * gameScale);
+        }
+        
+        // Game loop
+        function gameLoop(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            updateGame(deltaTime);
+            render();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Initialize audio with user interaction
+        async function initAudio() {
+            if (audioInitialized) return;
+            
+            song = document.getElementById('gameAudio');
+            if (!song) {
+                console.log('Audio element not found');
+                return;
+            }
+            
+            try {
+                // Create audio context to unlock audio
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    const audioContext = new AudioContext();
+                    await audioContext.resume();
+                }
+                
+                // Try to play and immediately pause to unlock audio
+                song.volume = audioEnabled ? 1.0 : 0.0;
+                await song.play();
+                song.pause();
+                song.currentTime = 0;
+                
+                audioInitialized = true;
+                console.log('Audio initialized successfully');
+                
+                song.addEventListener('loadeddata', () => {
+                    maxGameTime = song.duration || 124;
+                });
+                
+            } catch (e) {
+                console.log('Audio initialization failed:', e);
+                audioInitialized = false;
+            }
+        }
+        
+        // Toggle mute
+        function toggleMute() {
+            audioEnabled = !audioEnabled;
+            const muteBtn = document.getElementById('muteBtn');
+            muteBtn.textContent = audioEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+            
+            if (song) {
+                song.volume = audioEnabled ? 1.0 : 0.0;
+            }
+        }
+        
+        // Game controls
+        async function startGame() {
+            // Initialize audio on first user interaction
+            if (!audioInitialized) {
+                await initAudio();
+            }
+            
+            gameState = 'playing';
+            gameTime = 0;
+            score = 0;
+            player.letter = 'A';
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('gameStatus').textContent = 'Game Active! Tap letters or player to shoot!';
+            
+            if (song && audioInitialized) {
+                try {
+                    song.currentTime = 0;
+                    song.volume = audioEnabled ? 1.0 : 0.0;
+                    await song.play();
+                    console.log('Audio playing');
+                } catch (e) {
+                    console.log('Audio play failed:', e);
+                }
+            }
+        }
+        
+        function pauseGame() {
+            if (gameState === 'playing') {
+                gameState = 'paused';
+                if (song) song.pause();
+                document.getElementById('gameStatus').textContent = 'Game Paused';
+            } else if (gameState === 'paused') {
+                gameState = 'playing';
+                if (song) song.play();
+                document.getElementById('gameStatus').textContent = 'Game Active! Tap letters or player to shoot!';
+            }
+        }
+        
+        function resetGame() {
+            gameState = 'waiting';
+            gameTime = 0;
+            score = 0;
+            lives = 3;
+            player.letter = 'A';
+            celebrationStartTime = 0;
+            
+            // Reset stats
+            stats = {
+                totalShots: 0,
+                chainExplosions: 0,
+                lettersBlocked: 0,
+                maxScore: 0
+            };
+            
+            // Update player position
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 80 * gameScale;
+            player.size = 50 * gameScale;
+            pointerX = player.x;
+            
+            if (song) {
+                song.pause();
+                song.currentTime = 0;
+            }
+            
+            letters = [];
+            particles = [];
+            bullets = [];
+            
+            // Add initial letters
+            for (let i = 0; i < 4; i++) {
+                addLetter();
+            }
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('gameStatus').textContent = 'Game Reset! Ready to play';
+        }
+        
+        function endGame() {
+            gameState = 'ended';
+            if (song) song.pause();
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('gameStatus').textContent = `Game Complete! Final Score: ${score}`;
+        }
+        
+        function loadAudio() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                if (song) song.pause();
+                
+                song = new Audio();
+                const url = URL.createObjectURL(file);
+                song.src = url;
+                
+                song.addEventListener('loadeddata', () => {
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('gameStatus').textContent = 'Audio loaded! Ready to play';
+                    maxGameTime = song.duration;
+                });
+                
+                song.addEventListener('error', (e) => {
+                    console.error('Audio loading error:', e);
+                    document.getElementById('gameStatus').textContent = 'Audio failed to load. Try demo mode.';
+                });
+            } else {
+                alert('Please select an audio file first!');
+            }
+        }
+        
+        function startDemo() {
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('gameStatus').textContent = 'Demo ready! Tap letters or player to shoot!';
+            
+            // Add initial letters
+            for (let i = 0; i < 3; i++) {
+                addLetter();
+            }
+        }
+        
+        // Initialize game
+        resetGame();
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>

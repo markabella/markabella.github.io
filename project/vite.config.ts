@@ -8,7 +8,8 @@ export default defineConfig({
     host: true,
     open: true,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'Permissions-Policy': 'interest-cohort=()'
     }
   },
   preview: {
@@ -16,5 +17,8 @@ export default defineConfig({
     host: true,
     open: true
   },
-  base: '/'
+  base: '/markabella.github.io/',
+  optimizeDeps: {
+    exclude: ['lucide-react']
+  }
 });
