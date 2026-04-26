@@ -12,13 +12,24 @@ function submitQuestion() {
     ladderLoader.classList.remove('hidden');
 
     fetch(`https://scintillating-pika-68754f.netlify.app/.netlify/functions/answerQuestion?q=${encodeURIComponent(userQuestion)}`)
-        .then(response => {
-            if (!response.ok) {
-                // If response from server is not OK, throw an error with status text
-                throw new Error(`HTTP Error: ${response.statusText}`);
-            }
-            return response.json(); // Proceed to parse the response body as JSON only if the response was OK
-        })
+        .then(async response => {
+    const text = await response.text();
+
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch {
+        data = { error: text };
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            data.details || data.error || `HTTP ${response.status}: ${text}`
+        );
+    }
+
+    return data;
+})
         .then(data => {
             console.log('API Response:', data); // Log the entire response for debugging
             // Use optional chaining and nullish coalescing to handle cases where data or data.answer might be undefined
