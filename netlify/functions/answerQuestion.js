@@ -20,7 +20,7 @@ exports.handler = async (event) => {
         "Authorization": `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-5.2",
+        model: "gpt-5.5",
         reasoning: {
           effort: "medium"
         },
